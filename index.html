@@ -40,8 +40,8 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;m
 /* Quiz */
 .quiz-wrap{display:none}
 /* Quiz layout: sidebar + main */
-.quiz-body{display:flex;gap:14px;align-items:stretch}
-.sidebar{display:grid;grid-template-columns:repeat(5, 48px);gap:6px;background:#fff;border-radius:12px;padding:10px 8px;box-shadow:0 1px 3px rgba(0,0,0,.06);flex-shrink:0;align-content:flex-start;overflow-y:auto;max-height:100%}
+.quiz-body{display:flex;gap:14px;align-items:flex-start}
+.sidebar{display:grid;grid-template-columns:repeat(5, 48px);gap:6px;background:#fff;border-radius:12px;padding:10px 8px;box-shadow:0 1px 3px rgba(0,0,0,.06);flex-shrink:0;align-content:flex-start;overflow-y:auto;max-height:420px}
 .sidebar::-webkit-scrollbar{width:5px}
 .sidebar::-webkit-scrollbar-thumb{background:#c0c0c0;border-radius:3px}
 .qnum{width:48px;height:48px;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:14px;font-weight:bold;cursor:pointer;transition:all .15s;color:#666;background:#f0f0f0;border:2px solid transparent}
@@ -448,6 +448,12 @@ function renderQ(){
   html += '</div>';
 
   document.getElementById('qcard').innerHTML = html;
+
+  // 同步侧边栏高度与题目卡片
+  var qcard = document.getElementById('qcard');
+  var sidebar = document.getElementById('sidebar');
+  var qh = qcard.offsetHeight;
+  if(qh > 200){ sidebar.style.maxHeight = qh + 'px'; }
 
   // Bind events
   if(qt==='single' || qt==='multi'){
