@@ -330,7 +330,31 @@ function startQuiz(){
       var t=arr[i]; arr[i]=arr[j]; arr[j]=t;
     }
     if(randType==='essay'){ arr.forEach(function(q){ q._t='essay'; }); qlist = arr; }
-    else { arr = arr.slice(0,10); arr.forEach(function(q){ q._t=randType; }); qlist = arr; }
+    else {
+      arr = arr.slice(0,10);
+      // 随机打乱每题选项顺序
+      arr.forEach(function(q){
+        q._t = randType;
+        if(q.o && q.a !== undefined){
+          var pairs = q.o.map(function(opt, oi){ return {opt:opt, orig:oi}; });
+          for(var pi=pairs.length-1;pi>0;pi--){
+            var pj=Math.floor(Math.random()*(pi+1));
+            var pt=pairs[pi]; pairs[pi]=pairs[pj]; pairs[pj]=pt;
+          }
+          q.o = pairs.map(function(p){ return p.opt; });
+          // 更新答案
+          if(Array.isArray(q.a)){
+            q.a = q.a.map(function(origIdx){
+              for(var k=0;k<pairs.length;k++){ if(pairs[k].orig===origIdx) return k; }
+              return origIdx;
+            });
+          } else {
+            for(var k=0;k<pairs.length;k++){ if(pairs[k].orig===q.a){ q.a=k; break; } }
+          }
+        }
+      });
+      qlist = arr;
+    }
   }
 
   idx = 0;
