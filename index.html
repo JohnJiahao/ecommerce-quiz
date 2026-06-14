@@ -78,13 +78,15 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;m
 .reveal .ref{white-space:pre-wrap;margin-top:8px;padding:12px;background:#fafafa;border-radius:6px;font-size:13px}
 
 /* Nav */
-.nav-row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.nav-row{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
 .nav-btn{padding:10px 22px;border:1.5px solid #d0d0d0;border-radius:8px;background:#fff;cursor:pointer;font-size:14px;white-space:nowrap}
 .nav-btn:hover{background:#f5f5f5}
 .nav-btn.pri{background:#1a73e8;color:#fff;border-color:#1a73e8;font-weight:bold}
 .nav-btn.pri:hover{background:#1557b0}
 .nav-btn.warn{background:#fff;color:#f44336;border-color:#f44336}
 .nav-btn.warn:hover{background:#ffebee}
+.nav-btn.skip{background:#fff;color:#ff9800;border-color:#ff9800}
+.nav-btn.skip:hover{background:#fff3e0}
 .nav-btn:disabled{opacity:.35;cursor:not-allowed}
 
 /* Results */
@@ -153,6 +155,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;m
     <button class="nav-btn" id="prevBtn">&#9664; 上一题</button>
     <span style="font-size:13px;color:#999" id="navHint"></span>
     <button class="nav-btn pri" id="nextBtn">下一题 &#9654;</button>
+    <button class="nav-btn skip" id="skipBtn" style="display:none">跳过 ▸</button>
   </div>
   <button class="nav-btn warn" id="submitBtn" style="display:none;width:100%;margin-top:10px">&#128203; 交卷</button>
 </div>
@@ -278,6 +281,7 @@ document.getElementById('startBtn').addEventListener('click', startQuiz);
 document.getElementById('prevBtn').addEventListener('click', prevQ);
 document.getElementById('nextBtn').addEventListener('click', nextQ);
 document.getElementById('submitBtn').addEventListener('click', submitAll);
+document.getElementById('skipBtn').addEventListener('click', skipQ);
 
 function updateSetRow(){
   document.getElementById('setRow').style.display = (mode==='sequential' && qtype!=='essay') ? 'flex' : 'none';
@@ -562,7 +566,6 @@ function nextQ(){
       return;
     }
     doReveal();
-    // After revealing, check if we should show submit button
     if(idx===qlist.length-1){
       updateNav();
     }
@@ -575,6 +578,22 @@ function nextQ(){
     renderDots();
     updateNav();
     window.scrollTo(0,0);
+  }
+}
+
+function skipQ(){
+  if(revealed[idx]) return;
+  // Mark as skipped (no answer, counted as wrong)
+  revealed[idx] = true;
+  correct[idx] = false;
+  if(idx < qlist.length-1){
+    idx++;
+    renderQ();
+    renderDots();
+    updateNav();
+    window.scrollTo(0,0);
+  } else {
+    updateNav();
   }
 }
 
@@ -600,6 +619,7 @@ function jumpTo(i){
 function updateNav(){
   document.getElementById('prevBtn').disabled = (idx===0);
   var nextBtn = document.getElementById('nextBtn');
+  var skipBtn = document.getElementById('skipBtn');
   var submitBtn = document.getElementById('submitBtn');
   var hint = document.getElementById('navHint');
   hint.textContent = '';
@@ -609,14 +629,17 @@ function updateNav(){
 
   if(isLast && rev){
     nextBtn.style.display = 'none';
+    skipBtn.style.display = 'none';
     submitBtn.style.display = 'block';
   } else if(!rev){
     nextBtn.style.display = 'inline-block';
     nextBtn.textContent = '确认答案 ✓';
+    skipBtn.style.display = 'inline-block';
     submitBtn.style.display = 'none';
   } else {
     nextBtn.style.display = 'inline-block';
     nextBtn.textContent = '下一题 ▶';
+    skipBtn.style.display = 'none';
     submitBtn.style.display = 'none';
   }
 }
