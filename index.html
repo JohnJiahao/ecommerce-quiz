@@ -508,6 +508,8 @@ function renderQ(){
 function renderFillText(q){
   var parts = q.q.split(/__(\d+)__/);
   var h = '';
+  // 已揭示时，收集未匹配的正确答案用于提示
+  var unmatched = revealed[idx] ? q.a.map(function(a){ return a.toLowerCase().trim(); }) : [];
   for(var i=0;i<parts.length;i++){
     if(i%2===1){
       var ni = parseInt(parts[i])-1;
@@ -515,20 +517,24 @@ function renderFillText(q){
       var saved = answers[idx] || [];
       var val = saved[ni] || '';
       var cls = 'fill-inp';
+      var hint = '';
       if(revealed[idx]){
         var uv = (val||'').toLowerCase().trim();
-        var cv = q.a[ni].toLowerCase().trim();
-        if(uv===cv) cls += ' ok';
-        else cls += ' bad';
-      }
-      h += '<span class="fill-line"><input type="text" class="'+cls+'" id="fill'+ni+'" value="'+esc(val)+'" placeholder="'+(ni+1)+'"'+dis+'></span>';
-      if(revealed[idx]){
-        var uv1 = (val||'').toLowerCase().trim();
-        var cv1 = q.a[ni].toLowerCase().trim();
-        if(uv1!==cv1){
-          h += '<span class="fill-hint">→ '+q.a[ni]+'</span>';
+        // 顺序无关：在剩余未匹配答案中查找
+        var matchIdx = -1;
+        for(var u=0;u<unmatched.length;u++){
+          if(uv && unmatched[u]===uv){ matchIdx=u; break; }
+        }
+        if(matchIdx>=0){
+          cls += ' ok';
+          unmatched.splice(matchIdx,1);
+        } else {
+          cls += ' bad';
+          if(unmatched.length>0) hint = '→ '+unmatched[0];
         }
       }
+      h += '<span class="fill-line"><input type="text" class="'+cls+'" id="fill'+ni+'" value="'+esc(val)+'" placeholder="'+(ni+1)+'"'+dis+'></span>';
+      if(hint) h += '<span class="fill-hint">'+hint+'</span>';
     } else {
       h += parts[i];
     }
@@ -614,7 +620,14 @@ function doReveal(){
     correct[idx] = (arr.length===q.a.length && q.a.every(function(v){ return arr.indexOf(v)>=0; }));
   } else if(qt==='fill'){
     var vals = ua || [];
-    correct[idx] = q.a.every(function(a,i){ return vals[i] && vals[i].toLowerCase().trim()===a.toLowerCase().trim(); });
+    // 顺序无关：每个正确答案只需在任一输入框匹配即可
+    var remaining = q.a.map(function(a){ return a.toLowerCase().trim(); });
+    var filled = vals.filter(function(v){ return v && v.trim(); }).map(function(v){ return v.toLowerCase().trim(); });
+    correct[idx] = remaining.length === filled.length && remaining.every(function(a){
+      var found = filled.indexOf(a);
+      if(found>=0){ filled.splice(found,1); return true; }
+      return false;
+    });
   }
 
   revealed[idx] = true;
