@@ -37,23 +37,23 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;m
 /* Quiz */
 .quiz-wrap{display:none}
 /* Quiz layout: sidebar + main */
-.quiz-body{display:flex;gap:12px;align-items:flex-start}
-.sidebar{display:flex;flex-direction:column;gap:1px;background:#fff;border-radius:10px;padding:6px 4px;box-shadow:0 1px 3px rgba(0,0,0,.06);min-width:56px;max-height:70vh;overflow-y:auto;flex-shrink:0}
+.quiz-body{display:flex;gap:14px;align-items:flex-start}
+.sidebar{display:flex;flex-wrap:wrap;gap:6px;background:#fff;border-radius:12px;padding:10px 8px;box-shadow:0 1px 3px rgba(0,0,0,.06);flex-shrink:0;justify-content:flex-start;align-content:flex-start;max-width:292px}
 .sidebar::-webkit-scrollbar{width:4px}
 .sidebar::-webkit-scrollbar-thumb{background:#c0c0c0;border-radius:2px}
-.qnum{width:44px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:6px;font-size:12px;font-weight:bold;cursor:pointer;transition:all .15s;text-align:center;color:#666;background:#f8f8f8}
-.qnum:hover{background:#e3e8f0}
-.qnum.done{background:#c8e6c9;color:#2e7d32}
-.qnum.bad{background:#ffcdd2;color:#c62828}
-.qnum.now{background:#1a73e8;color:#fff;box-shadow:0 2px 6px rgba(26,115,232,.4)}
-.qnum.skipped{background:#ffe0b2;color:#e65100}
-.qnum-label{font-size:9px;color:#999;text-align:center;margin-bottom:4px}
+.qnum{width:48px;height:48px;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:14px;font-weight:bold;cursor:pointer;transition:all .15s;color:#666;background:#f0f0f0;border:2px solid transparent}
+.qnum:hover{background:#dde4f0;border-color:#90a4ae}
+.qnum.done{background:#c8e6c9;color:#2e7d32;border-color:#a5d6a7}
+.qnum.bad{background:#ffcdd2;color:#c62828;border-color:#ef9a9a}
+.qnum.now{background:#1a73e8;color:#fff;border-color:#0d47a1;box-shadow:0 3px 8px rgba(26,115,232,.35);transform:scale(1.08)}
+.qnum.skipped{background:#ffe0b2;color:#e65100;border-color:#ffcc80}
 .main-col{flex:1;min-width:0}
 
 @media(max-width:768px){
   .quiz-body{flex-direction:column-reverse}
-  .sidebar{flex-direction:row;min-width:auto;max-height:none;overflow-x:auto;overflow-y:hidden;padding:4px 6px;gap:3px;flex-wrap:nowrap}
-  .qnum{width:36px;height:28px;font-size:11px;flex-shrink:0}
+  .sidebar{flex-wrap:nowrap;max-width:none;overflow-x:auto;overflow-y:hidden;padding:8px 6px;gap:6px}
+  .qnum{width:42px;height:42px;font-size:13px;flex-shrink:0}
+  .qnum.now{transform:scale(1.05)}
 }
 
 .qcard{background:#fff;border-radius:14px;padding:24px 20px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:14px}
@@ -173,7 +173,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;m
 <!-- QUIZ -->
 <div class="quiz-wrap" id="quizWrap">
   <div class="quiz-body">
-    <div class="sidebar" id="sidebar"><div class="qnum-label">题号</div></div>
+    <div class="sidebar" id="sidebar"></div>
     <div class="main-col">
       <div class="qcard" id="qcard"></div>
     </div>
@@ -362,7 +362,7 @@ function goBack(){
 
 // ==================== 渲染 ====================
 function renderSidebar(){
-  var html = '<div class="qnum-label">题号</div>';
+  var html = '';
   for(var i=0;i<qlist.length;i++){
     var cls = 'qnum';
     if(i===idx) cls += ' now';
