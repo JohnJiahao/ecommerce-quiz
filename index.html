@@ -129,7 +129,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;m
   <div class="setup-card">
     <h2>选择做题模式</h2>
     <div class="btn-row" id="modeBtns">
-      <button class="mode-btn on" data-v="sequential">顺序做题<small>按套题顺序逐题练习</small></button>
+      <button class="mode-btn on" data-v="sequential">顺序做题<small>从第一题开始逐一练习</small></button>
       <button class="mode-btn" data-v="random">随机做题<small>随机抽取10道题目</small></button>
     </div>
     <div class="type-row" id="typeBtns">
@@ -137,11 +137,6 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;m
       <button class="type-btn" data-v="multi">多选题</button>
       <button class="type-btn" data-v="fill">填空题</button>
       <button class="type-btn" data-v="essay">论述题</button>
-    </div>
-    <div class="set-row" id="setRow">
-      <span>套题选择：</span>
-      <button class="set-btn on" data-v="1">第1套</button>
-      <button class="set-btn" data-v="2">第2套</button>
     </div>
     <button class="start-btn" id="startBtn">开 始 做 题</button>
   </div>
@@ -245,7 +240,6 @@ var essayBank = [
 // ==================== 状态 ====================
 var mode = 'sequential';
 var qtype = 'single';
-var setNum = 1;
 var qlist = [];
 var idx = 0;
 var revealed = {};
@@ -259,7 +253,6 @@ document.getElementById('modeBtns').addEventListener('click', function(e){
   if(!btn) return;
   mode = btn.getAttribute('data-v');
   document.querySelectorAll('#modeBtns .mode-btn').forEach(function(b){ b.classList.toggle('on', b===btn); });
-  updateSetRow();
 });
 
 document.getElementById('typeBtns').addEventListener('click', function(e){
@@ -267,14 +260,6 @@ document.getElementById('typeBtns').addEventListener('click', function(e){
   if(!btn) return;
   qtype = btn.getAttribute('data-v');
   document.querySelectorAll('#typeBtns .type-btn').forEach(function(b){ b.classList.toggle('on', b===btn); });
-  updateSetRow();
-});
-
-document.getElementById('setRow').addEventListener('click', function(e){
-  var btn = e.target.closest('button');
-  if(!btn) return;
-  setNum = parseInt(btn.getAttribute('data-v'));
-  document.querySelectorAll('#setRow .set-btn').forEach(function(b){ b.classList.toggle('on', b===btn); });
 });
 
 document.getElementById('startBtn').addEventListener('click', startQuiz);
@@ -282,10 +267,6 @@ document.getElementById('prevBtn').addEventListener('click', prevQ);
 document.getElementById('nextBtn').addEventListener('click', nextQ);
 document.getElementById('submitBtn').addEventListener('click', submitAll);
 document.getElementById('skipBtn').addEventListener('click', skipQ);
-
-function updateSetRow(){
-  document.getElementById('setRow').style.display = (mode==='sequential' && qtype!=='essay') ? 'flex' : 'none';
-}
 
 // ==================== 开始 ====================
 function startQuiz(){
@@ -295,14 +276,14 @@ function startQuiz(){
   else if(qtype==='fill') bank = fillBank;
   else bank = essayBank;
 
-  if(mode==='sequential' && qtype!=='essay'){
-    qlist = bank.filter(function(q){ return q.s===setNum; });
-  } else if(mode==='random' && qtype!=='essay'){
+  if(mode==='sequential'){
+    // 顺序做题：全部题目按顺序
+    qlist = bank.slice();
+  } else {
+    // 随机做题：打乱后取10题（论述题全放）
     var arr = bank.slice();
     for(var i=arr.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=arr[i];arr[i]=arr[j];arr[j]=t; }
-    qlist = arr.slice(0,10);
-  } else {
-    qlist = bank;
+    qlist = (qtype==='essay') ? arr : arr.slice(0,10);
   }
 
   idx = 0;
