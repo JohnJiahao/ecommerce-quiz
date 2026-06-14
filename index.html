@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>电子商务题库</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;min-height:100vh;color:#333}
+.header{background:linear-gradient(135deg,#1a73e8,#0d47a1);color:#fff;padding:18px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.15)}
+.header h1{font-size:24px;margin-bottom:2px}
+.container{max-width:800px;margin:20px auto;padding:0 16px}
+
+/* Setup */
+.setup-card{background:#fff;border-radius:14px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:16px}
+.setup-card h2{font-size:17px;margin-bottom:14px}
+.btn-row{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.mode-btn{flex:1;min-width:120px;padding:11px 14px;border:2px solid #e0e0e0;border-radius:10px;background:#fff;cursor:pointer;font-size:14px;transition:all .2s;text-align:center}
+.mode-btn:hover{border-color:#1a73e8;color:#1a73e8}
+.mode-btn.on{border-color:#1a73e8;background:#e8f0fe;color:#1a73e8;font-weight:bold}
+.mode-btn small{display:block;font-size:11px;color:#999;font-weight:normal;margin-top:2px}
+.type-row{display:flex;margin-bottom:16px;border-radius:8px;overflow:hidden;border:1.5px solid #e0e0e0}
+.type-btn{flex:1;padding:10px;text-align:center;background:#fff;cursor:pointer;font-size:13px;border:none;border-right:1.5px solid #e0e0e0}
+.type-btn:last-child{border-right:none}
+.type-btn:hover{background:#f5f8ff}
+.type-btn.on{background:#1a73e8;color:#fff}
+.set-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.set-row span{font-size:13px;color:#666}
+.set-btn{padding:7px 18px;border:1.5px solid #d0d0d0;border-radius:8px;background:#fff;cursor:pointer;font-size:13px}
+.set-btn:hover{border-color:#1a73e8;color:#1a73e8}
+.set-btn.on{border-color:#1a73e8;background:#1a73e8;color:#fff}
+.start-btn{display:block;width:100%;padding:13px;font-size:16px;background:linear-gradient(135deg,#1a73e8,#1557b0);color:#fff;border:none;border-radius:10px;cursor:pointer;font-weight:bold;letter-spacing:2px}
+.start-btn:hover{filter:brightness(1.1)}
+
+/* Quiz */
+.quiz-wrap{display:none}
+.dots{display:flex;justify-content:center;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+.dot{width:12px;height:12px;border-radius:50%;background:#d0d0d0;cursor:pointer;transition:all .2s}
+.dot.done{background:#81c784}
+.dot.bad{background:#ef5350}
+.dot.now{transform:scale(1.4);background:#1a73e8;box-shadow:0 0 8px rgba(26,115,232,.4)}
+
+.qcard{background:#fff;border-radius:14px;padding:24px 20px;box-shadow:0 2px 8px rgba(0,0,0,.06);min-height:200px;margin-bottom:16px}
+.badge{display:inline-block;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:bold;margin-bottom:12px}
+.badge.s{background:#e8f5e9;color:#2e7d32}
+.badge.m{background:#fff3e0;color:#e65100}
+.badge.f{background:#e3f2fd;color:#1565c0}
+.badge.e{background:#fce4ec;color:#c62828}
+.qidx{font-size:12px;color:#999;float:right;margin-top:2px}
+.qtext{font-size:16px;line-height:2;margin-bottom:18px}
+
+.opt{margin-bottom:9px}
+.opt label{display:flex;align-items:center;padding:11px 13px;border:1.5px solid #e8e8e8;border-radius:10px;cursor:pointer;font-size:14px;transition:all .15s}
+.opt label:hover{background:#f8f9ff;border-color:#90caf9}
+.opt input{margin-right:10px;flex-shrink:0;accent-color:#1a73e8}
+.opt.sel label{background:#e8f0fe;border-color:#1a73e8}
+.opt.ok label{background:#e8f5e9;border-color:#4caf50}
+.opt.err label{background:#ffebee;border-color:#ef5350}
+
+.fill-line{display:inline-block;vertical-align:bottom}
+.fill-inp{width:120px;border:none;border-bottom:2px dashed #999;padding:2px 6px;font-size:15px;text-align:center;outline:none;margin:0 3px}
+.fill-inp:focus{border-bottom-color:#1a73e8;border-bottom-style:solid}
+.fill-inp.ok{border-bottom-color:#4caf50;color:#2e7d32;font-weight:bold}
+.fill-inp.bad{border-bottom-color:#ef5350;color:#c62828;text-decoration:line-through}
+.fill-hint{font-size:12px;color:#2e7d32;font-weight:bold;margin-left:4px}
+
+.essay-ta{width:100%;padding:12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;resize:vertical;min-height:140px;font-family:inherit;line-height:1.7}
+.essay-ta:focus{outline:none;border-color:#1a73e8}
+
+/* Reveal */
+.reveal{display:none;margin-top:14px;padding:14px;background:#f5f7fa;border-radius:10px;font-size:14px;line-height:1.7}
+.reveal.show{display:block}
+.reveal .icon{font-size:36px;display:block;text-align:center;margin-bottom:4px}
+.reveal .msg{text-align:center;font-size:15px;font-weight:bold;margin-bottom:8px}
+.reveal .msg.good{color:#2e7d32}
+.reveal .msg.ng{color:#c62828}
+.reveal .ans{text-align:center;color:#2e7d32;font-weight:bold}
+.reveal .ref{white-space:pre-wrap;margin-top:8px;padding:12px;background:#fafafa;border-radius:6px;font-size:13px}
+
+/* Nav */
+.nav-row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.nav-btn{padding:10px 22px;border:1.5px solid #d0d0d0;border-radius:8px;background:#fff;cursor:pointer;font-size:14px;white-space:nowrap}
+.nav-btn:hover{background:#f5f5f5}
+.nav-btn.pri{background:#1a73e8;color:#fff;border-color:#1a73e8;font-weight:bold}
+.nav-btn.pri:hover{background:#1557b0}
+.nav-btn.warn{background:#fff;color:#f44336;border-color:#f44336}
+.nav-btn.warn:hover{background:#ffebee}
+.nav-btn:disabled{opacity:.35;cursor:not-allowed}
+
+/* Results */
+.result-wrap{display:none}
+.score-card{background:#fff;border-radius:14px;padding:28px;box-shadow:0 2px 8px rgba(0,0,0,.06);text-align:center}
+.score-num{font-size:68px;font-weight:bold;color:#1a73e8;line-height:1}
+.score-sub{font-size:16px;color:#999;margin:8px 0}
+.enc{font-size:20px;font-weight:bold;margin:14px 0;padding:12px;border-radius:10px}
+.enc.a{background:#e8f5e9;color:#2e7d32}
+.enc.b{background:#e3f2fd;color:#1565c0}
+.enc.c{background:#fff3e0;color:#e65100}
+.enc.d{background:#ffebee;color:#c62828}
+.detail{text-align:left;margin-top:16px}
+.dline{display:flex;align-items:center;padding:9px 12px;margin-bottom:5px;border-radius:8px;font-size:13px}
+.dline.g{background:#f1f8f4}
+.dline.r{background:#fef2f2}
+.dline .di{margin-right:10px;font-weight:bold;min-width:22px}
+.dline .ds{margin-left:auto;font-size:16px}
+.rst-btn{display:block;width:100%;padding:13px;margin-top:14px;font-size:15px;background:#1a73e8;color:#fff;border:none;border-radius:10px;cursor:pointer;font-weight:bold}
+.rst-btn:hover{filter:brightness(1.1)}
+
+@media(max-width:600px){
+  .header h1{font-size:20px}
+  .qtext{font-size:14px}
+  .opt label{font-size:13px;padding:9px 11px}
+  .fill-inp{width:80px}
+  .score-num{font-size:52px}
+  .nav-btn{padding:8px 14px;font-size:13px}
+}
+</style>
+</head>
+<body>
+
+<div class="header"><h1>电子商务题库</h1><p>期末复习练习系统</p></div>
+
+<div class="container">
+
+<!-- SETUP -->
+<div id="setupPanel">
+  <div class="setup-card">
+    <h2>选择做题模式</h2>
+    <div class="btn-row" id="modeBtns">
+      <button class="mode-btn on" data-v="sequential">顺序做题<small>按套题顺序逐题练习</small></button>
+      <button class="mode-btn" data-v="random">随机做题<small>随机抽取10道题目</small></button>
+    </div>
+    <div class="type-row" id="typeBtns">
+      <button class="type-btn on" data-v="single">单选题</button>
+      <button class="type-btn" data-v="multi">多选题</button>
+      <button class="type-btn" data-v="fill">填空题</button>
+      <button class="type-btn" data-v="essay">论述题</button>
+    </div>
+    <div class="set-row" id="setRow">
+      <span>套题选择：</span>
+      <button class="set-btn on" data-v="1">第1套</button>
+      <button class="set-btn" data-v="2">第2套</button>
+    </div>
+    <button class="start-btn" id="startBtn">开 始 做 题</button>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="quiz-wrap" id="quizWrap">
+  <div class="dots" id="dots"></div>
+  <div class="qcard" id="qcard"></div>
+  <div class="nav-row">
+    <button class="nav-btn" id="prevBtn">&#9664; 上一题</button>
+    <span style="font-size:13px;color:#999" id="navHint"></span>
+    <button class="nav-btn pri" id="nextBtn">下一题 &#9654;</button>
+  </div>
+  <button class="nav-btn warn" id="submitBtn" style="display:none;width:100%;margin-top:10px">&#128203; 交卷</button>
+</div>
+
+<!-- RESULTS -->
+<div class="result-wrap" id="resultWrap"></div>
+
+</div>
+
+<script>
+// ==================== 数据 ====================
+var singleBank = [
+  {s:1,q:"非对称加密算法的典型代表是什么？",o:["DES","RSA","MD5","SHA-1"],a:1},
+  {s:1,q:"电子支付过程中，卖方接收订单款时对应的金融机构是什么？",o:["支付网关","认证中心","收单银行","发卡银行"],a:2},
+  {s:1,q:"密钥管理的核心问题是什么？",o:["密钥生成","密钥分配","密钥存储","密钥销毁"],a:1},
+  {s:1,q:"电子支票支付过程中没有涉及到的实体是什么？",o:["消费者","商家","银行","政府"],a:3},
+  {s:1,q:"电子商务企业借助自身物质条件自行组织的物流活动是什么？",o:["第三方物流","回收物流","企业物流/自营物流","国际物流"],a:2},
+  {s:1,q:"可重复利用物品产生的运输属于哪类物流？",o:["第三方物流","回收物流","自营物流","供应链物流"],a:1},
+  {s:1,q:"通过Internet以外包或租赁方式为客户提供服务的服务商是什么？",o:["ISP","ICP","ASP","IDC"],a:2},
+  {s:1,q:"合同物流也称为什么？",o:["第一方物流","第二方物流","第三方物流","第四方物流"],a:2},
+  {s:1,q:"对称加密算法的典型代表是什么？",o:["RSA","AES","MD5","DES"],a:3},
+  {s:1,q:"电子支付过程中，买方支付订单时对应的金融机构是什么？",o:["收单银行","认证中心","支付网关","发卡银行"],a:2},
+  {s:2,q:"将结构化事务数据从计算机到计算机传输的方法叫什么？",o:["EDI","Email","FTP","HTTP"],a:0},
+  {s:2,q:"移动通信中的卫星系统属于哪种类型？",o:["同步卫星系统","异步卫星系统","近地轨道系统","中轨道系统"],a:0},
+  {s:2,q:"哪种建站方式具有投资小、建站快、无需软硬件配置等特点？",o:["独立服务器","虚拟主机","主机托管","云主机"],a:1},
+  {s:2,q:"SSL协议的含义是什么？",o:["安全电子交易协议","安全套接层协议","传输层安全协议","安全认证协议"],a:1},
+  {s:2,q:"最适合网络营销的产品是什么？",o:["生鲜食品","高档服装","电子图书与软件","大型家电"],a:2},
+  {s:2,q:"海尔商城主要从事的商务活动类型是？",o:["B2B","B2C","C2C","C2G"],a:1},
+  {s:2,q:"公开密钥密码体制的典型代表是？",o:["DES","AES","RSA","MD5"],a:2},
+  {s:2,q:"向买卖双方提供身份认证的第三方机构是？",o:["银行","认证中心","政府","商家"],a:1},
+  {s:2,q:"借记卡的主要功能是？",o:["先消费后还款","先存款后使用","只存不取","透支消费"],a:1},
+  {s:2,q:"网络营销手段很多，其中最有效的是哪一种？",o:["搜索引擎营销","邮件营销","口碑营销","广告营销"],a:2}
+];
+
+var multiBank = [
+  {s:1,q:"常见的网络广告形式有哪些？",o:["旗帜广告","按钮广告","弹出式广告","视频广告","搜索引擎广告"],a:[0,1,2]},
+  {s:1,q:"在规划网站结构时应遵循哪些基本原则？",o:["服务至上","内容第一/一致","三次点击","美观优先"],a:[0,1,2]},
+  {s:1,q:"域名具有哪些主要特征？",o:["唯一性","排他性","标识性","共享性"],a:[0,1,2]},
+  {s:1,q:"软件代理具有哪些特征？",o:["智能性","中介性","机动性","盈利性"],a:[0,1,2]},
+  {s:1,q:"数字时间戳主要包括哪些内容？",o:["需加时间戳文件的摘要","DTS收到文件的日期和时间","DTS的数字签名","原始文件内容"],a:[0,1,2]},
+  {s:1,q:"电子商务按交易主体可以分为哪些类型？",o:["B2B","B2C","C2C","C2G"],a:[0,1,2,3]},
+  {s:1,q:"哪些网站属于网上商城？",o:["京东商城","苏宁易购","当当网","饿了么"],a:[0,1,2,3]},
+  {s:1,q:"一篇结构化文档包括哪些要素？",o:["内容","结构","表现形式","标题","作者"],a:[0,1,2]},
+  {s:1,q:"哪些技术可用于制作动态网页？",o:["ASP","JSP","PHP","HTML"],a:[0,1,2]},
+  {s:1,q:"电子支付的方式/种类有哪些？",o:["电子支票","电子智能卡","电子钱包","指纹支付","信用卡"],a:[0,1,2,3,4]},
+  {s:2,q:"电子商务的任何一笔交易由哪几种流组成？",o:["信息流","商流","资金流","物流","人流"],a:[0,1,2,3]},
+  {s:2,q:"关于DES/RSA加密算法，正确的有？",o:["DES是对称加密算法","DES是非对称加密算法","RSA是对称加密算法","RSA是非对称加密算法"],a:[0,3]},
+  {s:2,q:"关于SET/SSL协议，正确的有？",o:["SET是安全电子交易协议","SET是安全套接层协议","SSL是安全套接层协议","SSL是安全电子交易协议"],a:[0,2]},
+  {s:2,q:"关于各类物流，正确的有？",o:["合同物流也称第三方物流","企业自营物流是企业借助自身物质条件自行组织的物流","回收物流是可重复利用物品产生的运输活动","合同物流是第一方物流"],a:[0,1,2]},
+  {s:2,q:"电子商务按交易主体分类包括？",o:["B2B","B2C","C2C","G2G","C2G"],a:[0,1,2,3,4]},
+  {s:2,q:"网站可行性分析包括哪些内容？",o:["经济可行性","技术可行性","管理可行性","法律可行性"],a:[0,1,2]},
+  {s:2,q:"网站的发布有哪些主要形式？",o:["发布到企业网","发布到因特网","发布到本地机","发布到移动端"],a:[0,1,2]},
+  {s:2,q:"网络营销服务的主要方式有？",o:["在线帮助","网络社区","电子邮件","在线表单","即时信息"],a:[0,1,2,3,4]},
+  {s:2,q:"常见的网络广告形式包括？",o:["旗帜广告","按钮广告","飘动广告","植入式广告","弹出式广告"],a:[0,1,2,3,4]},
+  {s:2,q:"电子支付的种类包括？",o:["信用卡","电子现金","电子智能卡","电子钱包","电子支票"],a:[0,1,2,3,4]}
+];
+
+var fillBank = [
+  {s:1,q:"主机的设置方法包括：因特网提供的服务、申请免费的网页空间、__1__、主机托管、__2__、__3__。",a:["虚拟主机","独立服务器","ASP外包服务"]},
+  {s:1,q:"企业网站的发布渠道包括：发布到__1__、发布到__2__、发布到__3__。",a:["企业网","因特网","本地机"]},
+  {s:1,q:"一篇文档的结构包括3个要素：__1__、__2__、__3__。",a:["内容","结构","表现形式"]},
+  {s:1,q:"3G应用的主要技术标准有：__1__、__2__、__3__。",a:["TD-SCDMA","WCDMA","CDMA2000"]},
+  {s:1,q:"电子商务知识产权的特点有：__1__、__2__、__3__。",a:["易复制性","易传播性","无国界性"]},
+  {s:2,q:"企业网站的功能包括：企业的__1__、企业的__2__、企业的__3__、企业与客户联系的窗口。",a:["宣传平台","交易平台","管理平台"]},
+  {s:2,q:"红外线通信的连接方式：__1__、__2__、__3__。",a:["直接红外线连接","反射式红外线连接","全向型红外线连接"]},
+  {s:2,q:"企业网站充分考虑并遵循设计原则：__1__、__2__、__3__。",a:["服务至上","三次点击","内容第一"]},
+  {s:2,q:"无线网络分为：__1__、__2__、__3__、__4__。",a:["无线局域网","无线广域网","无线城域网","无线个人网"]},
+  {s:2,q:"域名的特征：__1__（互联网上唯一的身份标识）、__2__（注册后他人不可再注册相同域名）、__3__（通过域名可识别企业/组织）。",a:["唯一性","排他性","标识性"]}
+];
+
+var essayBank = [
+  {q:"电子商务将很快取代传统商务和电子商务不是什么新的商务模式，而仅仅是交易工具的改变的说法正确吗？为什么？",
+   r:"1. 电子商务是在传统商务基础上发展起来的。传统商务中的广告宣传、订货、支付、物流配送、售后服务等环节，在电子商务中仍然存在，只是借助Internet、EDI、电子支付等技术实现了电子化和网络化。\n2. 电子商务不是取代所有传统商务模式，而是对传统商务的发展。例如网上购物可以在线完成浏览、下单和支付，但商品仍然需要仓储、运输和配送，因此电子商务仍离不开传统商务中的物流和服务环节。\n3. 传统企业的电子商务是我国发展电子商务的重点和主力。传统企业拥有产品、品牌、客户和供应链基础，通过建设企业网站、网上商店或交易平台，可以把原有商务活动扩展到网上。\n4. 电子商务是一个不断发展的概念。随着移动通信、网络营销、电子支付、物流管理和个性化推荐等技术的发展，电子商务不断出现新的形式，所以它不只是交易工具的改变，而是商务模式和管理方式的持续发展。"},
+  {q:"使用Apriori算法找出以下5个Web会话中蕴含的所有频繁Web页面集，并从频繁3-项集中导出关联规则。已知最小支持度>30%，最小可信度>70%。\n事务数据：T1={A,D}, T2={B,C,E}, T3={A,B,C,E}, T4={B,E}, T5={B,D}",
+   r:"【数据准备】共5个事务，支持度阈值>30%即至少2个事务，可信度>70%。\n\n【1-项候选集C1】\n{A}:2/5=40%, {B}:4/5=80%, {C}:2/5=40%, {D}:2/5=40%, {E}:3/5=60%\n所有1-项集均满足支持度>30%，频繁1-项集L1={A,B,C,D,E}。\n\n【2-项候选集C2】\n{A,B}:1/5=20%✗, {A,C}:1/5=20%✗, {A,D}:1/5=20%✗, {A,E}:1/5=20%✗\n{B,C}:2/5=40%✓, {B,D}:2/5=40%✓, {B,E}:3/5=60%✓, {C,E}:2/5=40%✓\n频繁2-项集L2={BC, BD, BE, CE}。\n\n【3-项候选集C3】\n{B,C,E}: 由L2中BC、BE、CE均为频繁，检查：{B,C,E}:2/5=40%≥2 ✓\n频繁3-项集L3={{B,C,E}}。\n\n【关联规则】从{B,C,E}导出（要求可信度>70%）：\nB→CE: 2/4=50%<70%✗\nC→BE: 2/2=100%>70%✓\nE→BC: 2/3≈66.7%<70%✗\nBC→E: 2/2=100%>70%✓\nBE→C: 2/3≈66.7%<70%✗\nCE→B: 2/2=100%>70%✓\n\n满足条件的强关联规则：C→BE, BC→E, CE→B。"},
+  {q:"第三利润源泉是什么？",r:"第三利润源泉是指：通过建立一体化物流系统，降低物流成本，利用现代物流管理，使产品在有效供应链内迅速移动，从而使参与各方企业和整个社会获得明显经济效益。"},
+  {q:"全信息理论中的两个层次（本体论层次和认识论层次）分别是什么？二者有什么联系？",r:"1. 本体论层次是纯客观的层次，不受主观因素的影响。本体论信息就是事物的运动状态及其变化方式的自我表示。\n2. 认识论层次的信息是认识主体所感受的关于该事物运动的状态及其变化方式的形式、含义和效用。\n3. 二者的联系：认识论层次的信息来源于本体论层次的信息，是主体对客观信息的感受和认识；本体论层次为认识论层次提供客观基础。"},
+  {q:"代理的定义及特性是什么？",r:"1. 代理是指根据用户的指令，以离线的方式游走于网络之间，自动处理一些烦琐复杂的工作，完成人们交付的命令。\n2. 特点：智能性、中介性、机动性。"},
+  {q:"什么是数字信封？",r:"数字信封是双方传送对称加密密钥时使用的技术。它用非对称加密技术中的公开密钥对所传送的密钥进行加密。接收方收到数字信封后用自己的私钥解密，获得对称加密密钥。数字信封解决了密钥分发问题。"},
+  {q:"什么是牛鞭效应？产生原因及如何解决？",r:"1. 营销过程中的需求变异放大现象被通俗地称为牛鞭效应。它是市场营销中普遍存在的高风险现象，是销售商与供应商在需求预测修正、订货批量决策、价格波动、短缺博弈、库存责任失衡和应付环境变异等方面博弈的结果，增大了供应商的生产、供应、库存管理和市场营销的不稳定性。\n2. 产生原因主要有6个方面：需求预测修正、订货批量决策、价格波动、短缺博弈、库存责任失衡和应付环境变异。\n3. 解决方案：(1)订货分级管理；(2)加强出入库管理，合理分担库存责任；(3)缩短提前期，实行外包服务；(4)规避短缺情况下的博弈行为；(5)参考历史资料，适当减量修正，分批发送；(6)提前回款期限。"},
+  {q:"DNS的定义是什么？",r:"域名系统DNS的主要功能是实现易于记忆的域名与不容易记忆的IP地址之间的转换，以便提供给网络层完成数据传送。"},
+  {q:"Web数据挖掘的分类有哪些？",r:"Web数据挖掘主要分为三类：\n1. Web内容挖掘：从Web文档内容中提取有用信息和知识。\n2. Web结构挖掘：分析Web页面之间的链接结构，发现重要的页面和社区。\n3. Web使用挖掘：通过分析Web服务器日志等数据，发现用户的访问模式和浏览行为。"},
+  {q:"作图说明采用散列函数的数字签名原理",r:"数字签名原理：\n1. 发送方对原始报文进行散列运算，生成消息摘要。\n2. 发送方用自己的私钥对消息摘要进行加密，生成数字签名。\n3. 发送方将原始报文和数字签名一起发送给接收方。\n4. 接收方用发送方的公钥对数字签名解密，得到消息摘要A。\n5. 接收方对收到的原始报文进行同样的散列运算，得到消息摘要B。\n6. 比较A和B：若一致，说明报文未被篡改且确实来自发送方。"},
+  {q:"作图说明使用SET协议的过程",r:"SET（安全电子交易协议）工作流程：\n1. 消费者在商家网站选择商品并下单。\n2. 商家将订单信息和支付信息转发给支付网关。\n3. 支付网关向发卡银行请求交易授权。\n4. 发卡银行验证消费者账户并授权交易。\n5. 支付网关将授权结果返回给商家。\n6. 商家向消费者确认订单。\n7. 商家向收单银行请求结算。\n8. 发卡银行向消费者发送账单。\n\n整个过程中，SET协议通过数字证书和双重签名技术确保交易安全和隐私。"}
+];
+
+// ==================== 状态 ====================
+var mode = 'sequential';
+var qtype = 'single';
+var setNum = 1;
+var qlist = [];
+var idx = 0;
+var revealed = {};
+var answers = {};
+var correct = {};
+var done = false;
+
+// ==================== 事件绑定 ====================
+document.getElementById('modeBtns').addEventListener('click', function(e){
+  var btn = e.target.closest('button');
+  if(!btn) return;
+  mode = btn.getAttribute('data-v');
+  document.querySelectorAll('#modeBtns .mode-btn').forEach(function(b){ b.classList.toggle('on', b===btn); });
+  updateSetRow();
+});
+
+document.getElementById('typeBtns').addEventListener('click', function(e){
+  var btn = e.target.closest('button');
+  if(!btn) return;
+  qtype = btn.getAttribute('data-v');
+  document.querySelectorAll('#typeBtns .type-btn').forEach(function(b){ b.classList.toggle('on', b===btn); });
+  updateSetRow();
+});
+
+document.getElementById('setRow').addEventListener('click', function(e){
+  var btn = e.target.closest('button');
+  if(!btn) return;
+  setNum = parseInt(btn.getAttribute('data-v'));
+  document.querySelectorAll('#setRow .set-btn').forEach(function(b){ b.classList.toggle('on', b===btn); });
+});
+
+document.getElementById('startBtn').addEventListener('click', startQuiz);
+document.getElementById('prevBtn').addEventListener('click', prevQ);
+document.getElementById('nextBtn').addEventListener('click', nextQ);
+document.getElementById('submitBtn').addEventListener('click', submitAll);
+
+function updateSetRow(){
+  document.getElementById('setRow').style.display = (mode==='sequential' && qtype!=='essay') ? 'flex' : 'none';
+}
+
+// ==================== 开始 ====================
+function startQuiz(){
+  var bank;
+  if(qtype==='single') bank = singleBank;
+  else if(qtype==='multi') bank = multiBank;
+  else if(qtype==='fill') bank = fillBank;
+  else bank = essayBank;
+
+  if(mode==='sequential' && qtype!=='essay'){
+    qlist = bank.filter(function(q){ return q.s===setNum; });
+  } else if(mode==='random' && qtype!=='essay'){
+    var arr = bank.slice();
+    for(var i=arr.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=arr[i];arr[i]=arr[j];arr[j]=t; }
+    qlist = arr.slice(0,10);
+  } else {
+    qlist = bank;
+  }
+
+  idx = 0;
+  revealed = {};
+  answers = {};
+  correct = {};
+  done = false;
+
+  document.getElementById('setupPanel').style.display = 'none';
+  document.getElementById('quizWrap').style.display = 'block';
+  document.getElementById('resultWrap').style.display = 'none';
+  document.getElementById('resultWrap').innerHTML = '';
+
+  renderDots();
+  renderQ();
+  updateNav();
+  window.scrollTo(0,0);
+}
+
+// ==================== 渲染 ====================
+function renderDots(){
+  var html = '';
+  for(var i=0;i<qlist.length;i++){
+    var cls = 'dot';
+    if(i===idx) cls += ' now';
+    else if(correct[i]===true) cls += ' done';
+    else if(correct[i]===false) cls += ' bad';
+    else if(revealed[i]) cls += ' done';
+    html += '<div class="'+cls+'" data-i="'+i+'" title="第'+(i+1)+'题"></div>';
+  }
+  var bar = document.getElementById('dots');
+  bar.innerHTML = html;
+  bar.querySelectorAll('.dot').forEach(function(d){
+    d.addEventListener('click', function(){ jumpTo(parseInt(this.getAttribute('data-i'))); });
+  });
+}
+
+function renderQ(){
+  var q = qlist[idx];
+  var html = '';
+
+  // Badge
+  var badgeTxt='', badgeCls='';
+  if(qtype==='single'){ badgeTxt='单选'; badgeCls='s'; }
+  else if(qtype==='multi'){ badgeTxt='多选'; badgeCls='m'; }
+  else if(qtype==='fill'){ badgeTxt='填空'; badgeCls='f'; }
+  else { badgeTxt='论述'; badgeCls='e'; }
+  html += '<span class="badge '+badgeCls+'">'+badgeTxt+'</span>';
+  html += '<span class="qidx">第 '+(idx+1)+' / '+qlist.length+' 题</span>';
+
+  // Question text
+  if(qtype==='fill'){
+    html += '<div class="qtext">'+renderFillText(q)+'</div>';
+  } else {
+    html += '<div class="qtext">'+q.q.replace(/\n/g,'<br>')+'</div>';
+  }
+
+  // Options
+  if(qtype==='single' || qtype==='multi'){
+    html += '<div id="optArea">';
+    var saved = answers[idx];
+    var rev = revealed[idx];
+    for(var oi=0; oi<q.o.length; oi++){
+      var sel = false;
+      if(qtype==='single') sel = (saved===oi);
+      else sel = (saved && saved.indexOf(oi)>=0);
+
+      var cls = 'opt';
+      if(rev){
+        var isCorrect = (qtype==='single') ? (q.a===oi) : (q.a.indexOf(oi)>=0);
+        if(isCorrect) cls += ' ok';
+        else if(sel) cls += ' err';
+      } else if(sel){
+        cls += ' sel';
+      }
+
+      var inpType = (qtype==='single') ? 'radio' : 'checkbox';
+      var checked = sel ? ' checked' : '';
+      var disabled = rev ? ' disabled' : '';
+      var label = String.fromCharCode(65+oi) + '. ' + q.o[oi];
+
+      html += '<div class="'+cls+'"><label>';
+      html += '<input type="'+inpType+'" name="opt" value="'+oi+'"'+checked+disabled+'>';
+      html += '<span>'+label+'</span>';
+      html += '</label></div>';
+    }
+    html += '</div>';
+  }
+
+  // Essay textarea
+  if(qtype==='essay'){
+    var saved = answers[idx] || '';
+    var dis = revealed[idx] ? ' disabled' : '';
+    html += '<textarea class="essay-ta" id="essayTa" placeholder="请输入你的答案..."'+dis+'>'+saved+'</textarea>';
+  }
+
+  // Reveal area
+  var showRev = revealed[idx];
+  html += '<div class="reveal'+(showRev?' show':'')+'" id="revealArea">';
+  if(showRev){
+    html += getRevealHTML(q);
+  }
+  html += '</div>';
+
+  document.getElementById('qcard').innerHTML = html;
+
+  // Bind option events
+  if(qtype==='single' || qtype==='multi'){
+    document.getElementById('optArea').addEventListener('change', onOptChange);
+  }
+  if(qtype==='fill'){
+    var inps = document.querySelectorAll('#qcard .fill-inp');
+    inps.forEach(function(inp){
+      inp.addEventListener('input', onFillChange);
+    });
+  }
+  if(qtype==='essay'){
+    var ta = document.getElementById('essayTa');
+    if(ta) ta.addEventListener('input', onEssayChange);
+  }
+}
+
+function renderFillText(q){
+  var parts = q.q.split(/__(\d+)__/);
+  var h = '';
+  for(var i=0;i<parts.length;i++){
+    if(i%2===1){
+      var ni = parseInt(parts[i])-1;
+      var dis = revealed[idx] ? ' disabled' : '';
+      var saved = answers[idx] || [];
+      var val = saved[ni] || '';
+      // Add class for correct/wrong if revealed
+      var cls = 'fill-inp';
+      if(revealed[idx]){
+        var userVal = (val||'').toLowerCase().trim();
+        var corrVal = q.a[ni].toLowerCase().trim();
+        if(userVal===corrVal) cls += ' ok';
+        else cls += ' bad';
+      }
+      h += '<span class="fill-line"><input type="text" class="'+cls+'" id="fill'+ni+'" value="'+escapeAttr(val)+'" placeholder="填空'+(ni+1)+'"'+dis+'></span>';
+      // Show correction if revealed and wrong
+      if(revealed[idx]){
+        var uv = (val||'').toLowerCase().trim();
+        var cv = q.a[ni].toLowerCase().trim();
+        if(uv!==cv && uv!==''){
+          h += '<span class="fill-hint">→ '+q.a[ni]+'</span>';
+        } else if(uv===''){
+          h += '<span class="fill-hint">← '+q.a[ni]+'</span>';
+        }
+      }
+    } else {
+      h += parts[i];
+    }
+  }
+  return h;
+}
+
+function escapeAttr(s){ return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function getRevealHTML(q){
+  var ok = correct[idx];
+  var h = '';
+  if(qtype==='essay'){
+    h += '<div style="font-weight:bold;margin-bottom:6px">参考答案：</div>';
+    h += '<div class="ref">'+q.r+'</div>';
+  } else if(ok){
+    h += '<span class="icon">&#9989;</span>';
+    h += '<div class="msg good">回答正确！太棒了！</div>';
+    if(qtype==='fill'){
+      h += '<div style="text-align:center;color:#999;font-size:12px">正确答案：'+q.a.join('、')+'</div>';
+    }
+  } else {
+    h += '<span class="icon">&#10060;</span>';
+    h += '<div class="msg ng">回答错误</div>';
+    h += '<div class="ans">正确答案：'+fmtAns(q)+'</div>';
+  }
+  return h;
+}
+
+function fmtAns(q){
+  if(qtype==='single') return String.fromCharCode(65+q.a)+'. '+q.o[q.a];
+  if(qtype==='multi') return q.a.map(function(v){ return String.fromCharCode(65+v)+'. '+q.o[v]; }).join('、');
+  if(qtype==='fill') return q.a.join('、');
+  return '';
+}
+
+// ==================== 事件处理 ====================
+function onOptChange(){
+  if(revealed[idx]) return;
+  if(qtype==='single'){
+    var rb = document.querySelector('input[name="opt"]:checked');
+    answers[idx] = rb ? parseInt(rb.value) : undefined;
+    // Update select styling
+    document.querySelectorAll('#optArea .opt').forEach(function(el,i){
+      el.classList.toggle('sel', i===answers[idx]);
+    });
+  } else {
+    var cbs = document.querySelectorAll('input[name="opt"]:checked');
+    var arr = [];
+    cbs.forEach(function(cb){ arr.push(parseInt(cb.value)); });
+    answers[idx] = arr;
+    document.querySelectorAll('#optArea .opt').forEach(function(el,i){
+      el.classList.toggle('sel', arr.indexOf(i)>=0);
+    });
+  }
+}
+
+function onFillChange(){
+  if(revealed[idx]) return;
+  var q = qlist[idx];
+  var vals = [];
+  for(var i=0;i<q.a.length;i++){
+    var inp = document.getElementById('fill'+i);
+    vals.push(inp ? inp.value.trim() : '');
+  }
+  answers[idx] = vals;
+}
+
+function onEssayChange(){
+  if(revealed[idx]) return;
+  var ta = document.getElementById('essayTa');
+  if(ta) answers[idx] = ta.value;
+}
+
+// ==================== 确认/导航 ====================
+function doReveal(){
+  if(revealed[idx]) return;
+
+  var q = qlist[idx];
+  var ua = answers[idx];
+
+  if(qtype==='single'){
+    correct[idx] = (ua===q.a);
+  } else if(qtype==='multi'){
+    var arr = ua || [];
+    var ca = q.a;
+    correct[idx] = (arr.length===ca.length && ca.every(function(v){ return arr.indexOf(v)>=0; }));
+  } else if(qtype==='fill'){
+    var vals = ua || [];
+    correct[idx] = q.a.every(function(a,i){ return vals[i] && vals[i].toLowerCase().trim()===a.toLowerCase().trim(); });
+  }
+
+  revealed[idx] = true;
+  renderQ();
+  renderDots();
+  updateNav();
+}
+
+function hasAns(){
+  if(qtype==='single') return answers[idx]!==undefined;
+  if(qtype==='multi') return answers[idx] && answers[idx].length>0;
+  if(qtype==='fill'){ var v=answers[idx]; return v && v.some(function(x){ return x&&x.trim(); }); }
+  if(qtype==='essay'){ var v=answers[idx]; return v && v.trim().length>0; }
+  return false;
+}
+
+function nextQ(){
+  if(!revealed[idx]){
+    if(!hasAns()){
+      alert('请先作答再确认！');
+      return;
+    }
+    doReveal();
+    // After revealing, check if we should show submit button
+    if(idx===qlist.length-1){
+      updateNav();
+    }
+    return;
+  }
+  // Already revealed, go to next
+  if(idx < qlist.length-1){
+    idx++;
+    renderQ();
+    renderDots();
+    updateNav();
+    window.scrollTo(0,0);
+  }
+}
+
+function prevQ(){
+  if(idx > 0){
+    idx--;
+    renderQ();
+    renderDots();
+    updateNav();
+    window.scrollTo(0,0);
+  }
+}
+
+function jumpTo(i){
+  if(done) return;
+  idx = i;
+  renderQ();
+  renderDots();
+  updateNav();
+  window.scrollTo(0,0);
+}
+
+function updateNav(){
+  document.getElementById('prevBtn').disabled = (idx===0);
+  var nextBtn = document.getElementById('nextBtn');
+  var submitBtn = document.getElementById('submitBtn');
+  var hint = document.getElementById('navHint');
+  hint.textContent = '';
+
+  var isLast = (idx===qlist.length-1);
+  var rev = revealed[idx];
+
+  if(isLast && rev){
+    nextBtn.style.display = 'none';
+    submitBtn.style.display = 'block';
+  } else if(!rev){
+    nextBtn.style.display = 'inline-block';
+    nextBtn.textContent = '确认答案 ✓';
+    submitBtn.style.display = 'none';
+  } else {
+    nextBtn.style.display = 'inline-block';
+    nextBtn.textContent = '下一题 ▶';
+    submitBtn.style.display = 'none';
+  }
+}
+
+// ==================== 交卷 ====================
+function submitAll(){
+  if(done) return;
+
+  // Ensure current question is revealed if answered
+  if(!revealed[idx] && hasAns()){
+    doReveal();
+  }
+
+  done = true;
+  document.getElementById('quizWrap').style.display = 'none';
+
+  var total = qlist.length;
+  var correctCount = 0;
+  for(var i=0;i<total;i++){
+    if(correct[i]===true) correctCount++;
+  }
+
+  var essayCount = (qtype==='essay') ? total : 0;
+  var scoreCount = total - essayCount;
+  var pct = scoreCount>0 ? Math.round(correctCount/scoreCount*100) : 0;
+
+  var grade, encCls, encMsg;
+  if(pct>=90){ grade='优秀'; encCls='a'; encMsg='🏆 太棒了！你掌握得非常扎实，继续保持！'; }
+  else if(pct>=70){ grade='良好'; encCls='b'; encMsg='👍 很不错！再巩固一下薄弱知识点会更好！'; }
+  else if(pct>=60){ grade='及格'; encCls='c'; encMsg='💪 加油！还有提升空间，多复习几遍一定可以！'; }
+  else { grade='不及格'; encCls='d'; encMsg='📚 别灰心！建议重新复习知识点，再来挑战一次吧！'; }
+
+  var h = '<div class="score-card">';
+  h += '<div class="score-num">'+correctCount+'<span style="font-size:22px;color:#999">/'+scoreCount+'</span></div>';
+  if(essayCount>0){
+    h += '<div class="score-sub">论述题请自行对照参考答案评分</div>';
+  } else {
+    h += '<div class="score-sub">正确率 '+pct+'% &nbsp;|&nbsp; 等级：'+grade+'</div>';
+  }
+  h += '<div class="enc '+encCls+'">'+encMsg+'</div>';
+
+  h += '<div class="detail">';
+  for(var i=0;i<total;i++){
+    var q = qlist[i];
+    var ok = correct[i];
+    var cls = ok ? 'g' : 'r';
+    var icon = ok ? '✅' : '❌';
+    if(qtype==='essay'){ cls='g'; icon='📝'; }
+    var txt = (q.q||'').replace(/<[^>]*>/g,'').replace(/\s+/g,'').slice(0,35);
+    h += '<div class="dline '+cls+'"><span class="di">'+(i+1)+'</span><span>'+txt+'</span><span class="ds">'+icon+'</span></div>';
+  }
+  h += '</div>';
+  h += '<button class="rst-btn" onclick="location.reload()">重新开始</button>';
+  h += '</div>';
+
+  document.getElementById('resultWrap').innerHTML = h;
+  document.getElementById('resultWrap').style.display = 'block';
+  window.scrollTo(0,0);
+}
+
+// Keyboard
+document.addEventListener('keydown', function(e){
+  if(done) return;
+  if(document.getElementById('quizWrap').style.display==='none') return;
+  if(e.key==='ArrowRight') nextQ();
+  if(e.key==='ArrowLeft') prevQ();
+  if(e.key==='Enter' && !revealed[idx]) nextQ();
+});
+</script>
+</body>
+</html>
