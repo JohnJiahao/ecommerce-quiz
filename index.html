@@ -308,14 +308,42 @@ document.getElementById('skipBtn').addEventListener('click', skipQ);
 document.getElementById('typeSection').classList.add('hidden');
 
 // ==================== 开始 ====================
+function shuffleOpts(q){
+  if(!q.o || q.a===undefined) return;
+  var pairs = q.o.map(function(opt,oi){ return {opt:opt,orig:oi}; });
+  for(var pi=pairs.length-1;pi>0;pi--){
+    var pj=Math.floor(Math.random()*(pi+1));
+    var pt=pairs[pi]; pairs[pi]=pairs[pj]; pairs[pj]=pt;
+  }
+  q.o = pairs.map(function(p){ return p.opt; });
+  if(Array.isArray(q.a)){
+    q.a = q.a.map(function(origIdx){
+      for(var k=0;k<pairs.length;k++){ if(pairs[k].orig===origIdx) return k; }
+      return origIdx;
+    });
+  } else {
+    for(var k=0;k<pairs.length;k++){ if(pairs[k].orig===q.a){ q.a=k; break; } }
+  }
+}
+
 function startQuiz(){
   if(mode==='sequential'){
-    // 顺序做题：全部题目混排
+    // 顺序做题：全部题型混排，每题选项乱序（深拷贝避免改原数据）
     qlist = [];
-    singleBank.forEach(function(q){ q._t='single'; qlist.push(q); });
-    multiBank.forEach(function(q){ q._t='multi'; qlist.push(q); });
-    fillBank.forEach(function(q){ q._t='fill'; qlist.push(q); });
-    essayBank.forEach(function(q){ q._t='essay'; qlist.push(q); });
+    singleBank.forEach(function(q){
+      var nq = {_t:'single', q:q.q, o:q.o.slice(), a:Array.isArray(q.a)?q.a.slice():q.a};
+      shuffleOpts(nq); qlist.push(nq);
+    });
+    multiBank.forEach(function(q){
+      var nq = {_t:'multi', q:q.q, o:q.o.slice(), a:Array.isArray(q.a)?q.a.slice():q.a};
+      shuffleOpts(nq); qlist.push(nq);
+    });
+    fillBank.forEach(function(q){
+      qlist.push({_t:'fill', q:q.q, a:q.a.slice()});
+    });
+    essayBank.forEach(function(q){
+      qlist.push({_t:'essay', q:q.q, r:q.r});
+    });
   } else {
     // 随机做题：按选定类型抽10题
     var bank;
@@ -329,31 +357,14 @@ function startQuiz(){
       var j=Math.floor(Math.random()*(i+1));
       var t=arr[i]; arr[i]=arr[j]; arr[j]=t;
     }
-    if(randType==='essay'){ arr.forEach(function(q){ q._t='essay'; }); qlist = arr; }
-    else {
+    if(randType==='essay'){
+      qlist = arr.map(function(q){ return {_t:'essay', q:q.q, r:q.r}; });
+    } else {
       arr = arr.slice(0,10);
-      // 随机打乱每题选项顺序
-      arr.forEach(function(q){
-        q._t = randType;
-        if(q.o && q.a !== undefined){
-          var pairs = q.o.map(function(opt, oi){ return {opt:opt, orig:oi}; });
-          for(var pi=pairs.length-1;pi>0;pi--){
-            var pj=Math.floor(Math.random()*(pi+1));
-            var pt=pairs[pi]; pairs[pi]=pairs[pj]; pairs[pj]=pt;
-          }
-          q.o = pairs.map(function(p){ return p.opt; });
-          // 更新答案
-          if(Array.isArray(q.a)){
-            q.a = q.a.map(function(origIdx){
-              for(var k=0;k<pairs.length;k++){ if(pairs[k].orig===origIdx) return k; }
-              return origIdx;
-            });
-          } else {
-            for(var k=0;k<pairs.length;k++){ if(pairs[k].orig===q.a){ q.a=k; break; } }
-          }
-        }
+      qlist = arr.map(function(q){
+        var nq = {_t:randType, q:q.q, o:q.o.slice(), a:Array.isArray(q.a)?q.a.slice():q.a};
+        shuffleOpts(nq); return nq;
       });
-      qlist = arr;
     }
   }
 
