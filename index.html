@@ -37,10 +37,10 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;m
 /* Quiz */
 .quiz-wrap{display:none}
 /* Quiz layout: sidebar + main */
-.quiz-body{display:flex;gap:14px;align-items:flex-start}
-.sidebar{display:grid;grid-template-columns:repeat(5, 48px);gap:6px;background:#fff;border-radius:12px;padding:10px 8px;box-shadow:0 1px 3px rgba(0,0,0,.06);flex-shrink:0}
-.sidebar::-webkit-scrollbar{width:4px}
-.sidebar::-webkit-scrollbar-thumb{background:#c0c0c0;border-radius:2px}
+.quiz-body{display:flex;gap:14px;align-items:stretch}
+.sidebar{display:grid;grid-template-columns:repeat(5, 48px);gap:6px;background:#fff;border-radius:12px;padding:10px 8px;box-shadow:0 1px 3px rgba(0,0,0,.06);flex-shrink:0;align-content:flex-start;overflow-y:auto;max-height:100%}
+.sidebar::-webkit-scrollbar{width:5px}
+.sidebar::-webkit-scrollbar-thumb{background:#c0c0c0;border-radius:3px}
 .qnum{width:48px;height:48px;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:14px;font-weight:bold;cursor:pointer;transition:all .15s;color:#666;background:#f0f0f0;border:2px solid transparent}
 .qnum:hover{background:#dde4f0;border-color:#90a4ae}
 .qnum.done{background:#c8e6c9;color:#2e7d32;border-color:#a5d6a7}
@@ -50,10 +50,10 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;m
 .main-col{flex:1;min-width:0}
 
 @media(max-width:768px){
-  .quiz-body{flex-direction:column-reverse}
-  .sidebar{display:flex;overflow-x:auto;overflow-y:hidden;padding:8px 6px;gap:6px}
-  .qnum{width:42px;height:42px;font-size:13px;flex-shrink:0}
-  .qnum.now{transform:scale(1.05)}
+  .quiz-body{flex-direction:column;align-items:stretch}
+  .sidebar{display:flex;overflow-x:auto;overflow-y:hidden;padding:8px;gap:6px;border-radius:12px;max-width:100%;-webkit-overflow-scrolling:touch;scroll-snap-type:x mandatory}
+  .sidebar .qnum{width:44px;height:44px;font-size:14px;flex-shrink:0;scroll-snap-align:start}
+  .sidebar .qnum.now{transform:none}
 }
 
 .qcard{background:#fff;border-radius:14px;padding:24px 20px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:14px}
