@@ -147,7 +147,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;m
 <div class="header" id="headerBar">
   <button class="back-btn" id="backBtn" onclick="goBack()">&#9664; 返回</button>
   <h1>电子商务题库</h1>
-  <p>期末复习练习系统 · v3</p>
+  <p>期末复习练习系统 · v4</p>
 </div>
 
 <div class="container">
@@ -342,7 +342,7 @@ function startQuiz(){
       qlist.push({_t:'fill', q:q.q, a:q.a.slice()});
     });
     essayBank.forEach(function(q){
-      qlist.push({_t:'essay', q:q.q, r:q.r});
+      qlist.push({_t:'essay', q:q.q, r:q.r, img:q.img||null});
     });
   } else {
     // 随机做题：按选定类型抽10题
@@ -358,7 +358,7 @@ function startQuiz(){
       var t=arr[i]; arr[i]=arr[j]; arr[j]=t;
     }
     if(randType==='essay'){
-      qlist = arr.map(function(q){ return {_t:'essay', q:q.q, r:q.r}; });
+      qlist = arr.map(function(q){ return {_t:'essay', q:q.q, r:q.r, img:q.img||null}; });
     } else {
       arr = arr.slice(0,10);
       qlist = arr.map(function(q){
