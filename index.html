@@ -108,6 +108,12 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;m
 .nav-btn.skip:hover{background:#fff3e0}
 .nav-btn:disabled{opacity:.35;cursor:not-allowed}
 
+/* Lightbox */
+.lightbox{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.9);z-index:9999;cursor:pointer;align-items:center;justify-content:center}
+.lightbox.show{display:flex}
+.lightbox img{max-width:95%;max-height:95%;border-radius:4px}
+.lightbox .close{position:absolute;top:16px;right:24px;color:#fff;font-size:32px;cursor:pointer}
+
 /* Results */
 .result-wrap{display:none}
 .score-card{background:#fff;border-radius:14px;padding:28px;box-shadow:0 2px 8px rgba(0,0,0,.06);text-align:center}
@@ -147,7 +153,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;m
 <div class="header" id="headerBar">
   <button class="back-btn" id="backBtn" onclick="goBack()">&#9664; 返回</button>
   <h1>电子商务题库</h1>
-  <p>期末复习练习系统 · v4</p>
+  <p>期末复习练习系统 · v5</p>
 </div>
 
 <div class="container">
@@ -192,6 +198,11 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;m
 
 <!-- RESULTS -->
 <div class="result-wrap" id="resultWrap"></div>
+
+<div class="lightbox" id="lightbox" onclick="this.classList.remove('show')">
+  <span class="close">&times;</span>
+  <img id="lightboxImg" src="" alt="放大图片">
+</div>
 
 </div>
 
@@ -243,12 +254,12 @@ var multiBank = [
 ];
 
 var fillBank = [
-  {q:"主机的设置方法包括：因特网提供的服务、申请免费的网页空间、__1__、主机托管、__2__、__3__。",a:["虚拟主机","独立服务器","ASP外包服务"]},
+  {q:"主机的设置方法包括：__1__、__2__、__3__、__4__、__5__、__6__。",a:["因特网提供的服务","申请免费的网页空间","虚拟主机","主机托管","独立服务器","ASP外包服务"]},
   {q:"企业网站的发布渠道包括：发布到__1__、发布到__2__、发布到__3__。",a:["企业网","因特网","本地机"]},
   {q:"一篇文档的结构包括3个要素：__1__、__2__、__3__。",a:["内容","结构","表现形式"]},
   {q:"3G应用的主要技术标准有：__1__、__2__、__3__。",a:["TD-SCDMA","WCDMA","CDMA2000"]},
   {q:"电子商务知识产权的特点有：__1__、__2__、__3__。",a:["易复制性","易传播性","无国界性"]},
-  {q:"企业网站的功能包括：企业的__1__、企业的__2__、企业的__3__、企业与客户联系的窗口。",a:["宣传平台","交易平台","管理平台"]},
+  {q:"企业网站的功能包括：__1__、__2__、__3__、__4__。",a:["企业的宣传平台","企业的交易平台","企业的管理平台","企业与客户联系的窗口"]},
   {q:"红外线通信的连接方式：__1__、__2__、__3__。",a:["直接红外线连接","反射式红外线连接","全向型红外线连接"]},
   {q:"企业网站充分考虑并遵循设计原则：__1__、__2__、__3__。",a:["服务至上","三次点击","内容第一"]},
   {q:"无线网络分为：__1__、__2__、__3__、__4__。",a:["无线局域网","无线广域网","无线城域网","无线个人网"]},
@@ -265,8 +276,8 @@ var essayBank = [
   {q:"什么是牛鞭效应？产生原因及如何解决？",r:"1. 营销过程中的需求变异放大现象被通俗地称为牛鞭效应。它是市场营销中普遍存在的高风险现象，是销售商与供应商在需求预测修正、订货批量决策、价格波动、短缺博弈、库存责任失衡和应付环境变异等方面博弈的结果，增大了供应商的生产、供应、库存管理和市场营销的不稳定性。\n2. 产生原因主要有6个方面：需求预测修正、订货批量决策、价格波动、短缺博弈、库存责任失衡和应付环境变异。\n3. 解决方案：(1)订货分级管理；(2)加强出入库管理，合理分担库存责任；(3)缩短提前期，实行外包服务；(4)规避短缺情况下的博弈行为；(5)参考历史资料，适当减量修正，分批发送；(6)提前回款期限。"},
   {q:"DNS的定义是什么？",r:"域名系统DNS的主要功能是实现易于记忆的域名与不容易记忆的IP地址之间的转换，以便提供给网络层完成数据传送。"},
   {q:"Web数据挖掘的分类有哪些？",img:"img-webmining.png",r:"Web数据挖掘主要分为三类：\n1. Web内容挖掘：从Web文档内容中提取有用信息和知识。\n2. Web结构挖掘：分析Web页面之间的链接结构，发现重要的页面和社区。\n3. Web使用挖掘：通过分析Web服务器日志等数据，发现用户的访问模式和浏览行为。"},
-  {q:"作图说明采用散列函数的数字签名原理",img:"img-signature.png",r:"数字签名原理：\n1. 发送方对原始报文进行散列运算，生成消息摘要。\n2. 发送方用自己的私钥对消息摘要进行加密，生成数字签名。\n3. 发送方将原始报文和数字签名一起发送给接收方。\n4. 接收方用发送方的公钥对数字签名解密，得到消息摘要A。\n5. 接收方对收到的原始报文进行同样的散列运算，得到消息摘要B。\n6. 比较A和B：若一致，说明报文未被篡改且确实来自发送方。"},
-  {q:"作图说明使用SET协议的过程",img:"img-set.jpeg",r:"SET（安全电子交易协议）工作流程：\n1. 消费者在商家网站选择商品并下单。\n2. 商家将订单信息和支付信息转发给支付网关。\n3. 支付网关向发卡银行请求交易授权。\n4. 发卡银行验证消费者账户并授权交易。\n5. 支付网关将授权结果返回给商家。\n6. 商家向消费者确认订单。\n7. 商家向收单银行请求结算。\n8. 发卡银行向消费者发送账单。\n\n整个过程中，SET协议通过数字证书和双重签名技术确保交易安全和隐私。"}
+  {q:"作图说明采用散列函数的数字签名原理",img:"img-set.jpeg",r:"数字签名原理：\n1. 发送方对原始报文进行散列运算，生成消息摘要。\n2. 发送方用自己的私钥对消息摘要进行加密，生成数字签名。\n3. 发送方将原始报文和数字签名一起发送给接收方。\n4. 接收方用发送方的公钥对数字签名解密，得到消息摘要A。\n5. 接收方对收到的原始报文进行同样的散列运算，得到消息摘要B。\n6. 比较A和B：若一致，说明报文未被篡改且确实来自发送方。"},
+  {q:"作图说明使用SET协议的过程",img:"img-signature.png",r:"SET（安全电子交易协议）工作流程：\n1. 消费者在商家网站选择商品并下单。\n2. 商家将订单信息和支付信息转发给支付网关。\n3. 支付网关向发卡银行请求交易授权。\n4. 发卡银行验证消费者账户并授权交易。\n5. 支付网关将授权结果返回给商家。\n6. 商家向消费者确认订单。\n7. 商家向收单银行请求结算。\n8. 发卡银行向消费者发送账单。\n\n整个过程中，SET协议通过数字证书和双重签名技术确保交易安全和隐私。"}
 ];
 
 // ==================== 状态 ====================
@@ -275,6 +286,7 @@ var randType = 'single';  // 随机模式下的题型选择
 var qlist = [];
 var idx = 0;
 var revealed = {};
+var skipped = {};
 var answers = {};
 var correct = {};
 var done = false;
@@ -362,6 +374,9 @@ function startQuiz(){
     } else {
       arr = arr.slice(0,10);
       qlist = arr.map(function(q){
+        if(randType==='fill'){
+          return {_t:'fill', q:q.q, a:q.a.slice()};
+        }
         var nq = {_t:randType, q:q.q, o:q.o.slice(), a:Array.isArray(q.a)?q.a.slice():q.a};
         shuffleOpts(nq); return nq;
       });
@@ -370,6 +385,7 @@ function startQuiz(){
 
   idx = 0;
   revealed = {};
+  skipped = {};
   answers = {};
   correct = {};
   done = false;
@@ -406,6 +422,7 @@ function renderSidebar(){
     if(i===idx) cls += ' now';
     else if(correct[i]===true) cls += ' done';
     else if(correct[i]===false) cls += ' bad';
+    else if(skipped[i]) cls += ' skipped';
     else if(revealed[i]) cls += ' skipped';
     html += '<div class="'+cls+'" data-i="'+i+'">'+(i+1)+'</div>';
   }
@@ -542,14 +559,20 @@ function renderFillText(q){
   return h;
 }
 function esc(s){ return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function showLightbox(src){ document.getElementById('lightboxImg').src=src; document.getElementById('lightbox').classList.add('show'); }
 
 function getRevealHTML(q,qt){
   var ok = correct[idx];
   var h = '';
   if(qt==='essay'){
-    if(q.img) h += '<div style="text-align:center;margin-bottom:10px"><img src="'+q.img+'" style="max-width:100%;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.1)" alt="图示"></div>';
+    if(q.img) h += '<div style="text-align:center;margin-bottom:10px"><img src="'+q.img+'" style="max-width:100%;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.1);cursor:pointer" alt="图示" onclick="showLightbox(this.src)"></div>';
     h += '<div style="font-weight:bold;margin-bottom:6px">参考答案：</div>';
     h += '<div class="ref">'+q.r+'</div>';
+  } else if(ok===undefined){
+    // 跳过
+    h += '<span class="icon">⏭</span>';
+    h += '<div class="msg" style="color:#ff9800">已跳过此题</div>';
+    h += '<div class="ans">正确答案：'+fmtAns(q,qt)+'</div>';
   } else if(ok){
     h += '<span class="icon">✅</span>';
     h += '<div class="msg good">回答正确！太棒了！</div>';
@@ -632,6 +655,7 @@ function doReveal(){
   }
 
   revealed[idx] = true;
+  delete skipped[idx];
   renderQ();
   renderSidebar();
   updateNav();
@@ -667,16 +691,13 @@ function nextQ(){
 
 function skipQ(){
   if(revealed[idx]) return;
-  revealed[idx] = true;
-  correct[idx] = false;
+  skipped[idx] = true;
   if(idx < qlist.length-1){
     idx++;
     renderQ();
     renderSidebar();
     updateNav();
     window.scrollTo(0,0);
-  } else {
-    updateNav();
   }
 }
 
@@ -753,9 +774,10 @@ function submitAll(){
   for(var i=0;i<total;i++){
     var qt = qlist[i]._t;
     if(qt!=='essay'){
-      if(correct[i]===true){ correctCount++; typeScores[qt].ok++; }
-      typeScores[qt].total++;
-      scoreTotal++;
+      // 跳过的题目（correct 为 undefined）不计分
+      if(correct[i]===true){ correctCount++; typeScores[qt].ok++; typeScores[qt].total++; scoreTotal++; }
+      else if(correct[i]===false){ typeScores[qt].total++; scoreTotal++; }
+      // correct[i] === undefined: 跳过，不计入total
     } else {
       typeScores.essay.total++;
     }
@@ -796,8 +818,9 @@ function submitAll(){
   for(var i=0;i<total;i++){
     var q = qlist[i];
     var ok = correct[i];
-    var cls = ok ? 'g' : 'r';
-    var icon = ok ? '✅' : '❌';
+    var skipped = (ok===undefined);
+    var cls = skipped ? 'g' : (ok ? 'g' : 'r');
+    var icon = skipped ? '⏭' : (ok ? '✅' : '❌');
     if(q._t==='essay'){ cls='g'; icon='📝'; }
     var txt = (q.q||'').replace(/<[^>]*>/g,'').replace(/\s+/g,'').slice(0,35);
     h += '<div class="dline '+cls+'"><span class="di">'+(i+1)+'</span><span>'+txt+'</span><span class="ds">'+icon+'</span></div>';
