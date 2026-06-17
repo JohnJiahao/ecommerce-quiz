@@ -748,6 +748,7 @@ function getRevealHTML(q,qt){
     h += '<div class="msg ng">回答错误</div>';
     h += '<div class="ans">正确答案：'+fmtAns(q,qt)+'</div>';
   }
+  h += '<div style="text-align:center;margin-top:10px"><button class="nav-btn" onclick="redoCurrent()" style="color:#1a73e8;border-color:#1a73e8">🔄 重做此题</button></div>';
   return h;
 }
 
@@ -1043,6 +1044,16 @@ function reviewQ(i){
   renderQ();
   updateNav();
   window.scrollTo(0,0);
+}
+
+function redoCurrent(){
+  if(reviewing) return;
+  delete revealed[idx];
+  delete correct[idx];
+  delete answers[idx];
+  renderQ();
+  renderSidebar();
+  updateNav();
 }
 
 function backToResults(){
