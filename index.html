@@ -1067,6 +1067,10 @@ function backToResults(){
 document.addEventListener('keydown', function(e){
   if(done) return;
   if(document.getElementById('quizWrap').style.display==='none') return;
+  // 不在输入框或文本域内才响应方向键
+  var tag = document.activeElement.tagName;
+  var isInput = (tag==='INPUT' || tag==='TEXTAREA' || tag==='SELECT');
+  if(isInput) return;
   if(e.key==='ArrowRight') nextQ();
   if(e.key==='ArrowLeft') prevQ();
   if(e.key==='Enter' && !revealed[idx]) nextQ();
