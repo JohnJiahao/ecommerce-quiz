@@ -35,6 +35,9 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;m
 .type-btn.on{background:#1a73e8;color:#fff}
 .start-btn{display:block;width:100%;padding:13px;font-size:16px;background:linear-gradient(135deg,#1a73e8,#1557b0);color:#fff;border:none;border-radius:10px;cursor:pointer;font-weight:bold;letter-spacing:2px}
 .start-btn:hover{filter:brightness(1.1)}
+.wrong-btn{display:block;width:100%;padding:13px;margin-top:10px;font-size:16px;background:#fff;color:#f44336;border:2px solid #f44336;border-radius:10px;cursor:pointer;font-weight:bold;text-align:center}
+.wrong-btn:hover{background:#ffebee}
+.wrong-count{display:inline-block;background:#f44336;color:#fff;border-radius:10px;padding:1px 8px;font-size:12px;margin-left:6px;vertical-align:middle}
 .type-label{font-size:13px;color:#999;margin-bottom:6px}
 
 /* Quiz */
@@ -125,7 +128,21 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;m
 .enc.c{background:#fff3e0;color:#e65100}
 .enc.d{background:#ffebee;color:#c62828}
 .detail{text-align:left;margin-top:16px}
-.dline{display:flex;align-items:center;padding:9px 12px;margin-bottom:5px;border-radius:8px;font-size:13px}
+.dline{display:flex;align-items:center;padding:9px 12px;margin-bottom:5px;border-radius:8px;font-size:13px;cursor:pointer;transition:all .15s}
+.dline:hover{filter:brightness(.95)}
+
+/* Review modal */
+.review-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:999;overflow-y:auto}
+.review-overlay.show{display:block}
+.review-card{background:#fff;max-width:700px;margin:40px auto;border-radius:14px;padding:24px;position:relative}
+.review-card .rclose{position:absolute;top:10px;right:14px;font-size:24px;cursor:pointer;color:#999;background:none;border:none}
+.review-card .qtext{font-size:15px;line-height:1.8;margin-bottom:14px}
+.review-card .rlabel{font-size:12px;color:#999;margin-bottom:4px}
+.review-card .ranswer{padding:10px 14px;border-radius:8px;font-size:14px;margin-bottom:8px}
+.review-card .ranswer.user{background:#fef2f2;color:#c62828}
+.review-card .ranswer.user.correct{background:#f1f8f4;color:#2e7d32}
+.review-card .ranswer.ref{background:#f5f7fa;color:#333}
+.review-nav{display:flex;justify-content:space-between;margin-top:16px}
 .dline.g{background:#f1f8f4}
 .dline.r{background:#fef2f2}
 .dline .di{margin-right:10px;font-weight:bold;min-width:22px}
@@ -176,6 +193,18 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;m
       </div>
     </div>
     <button class="start-btn" id="startBtn">开 始 做 题</button>
+    <button class="wrong-btn" id="favBtn" onclick="openFav()">⭐ 收藏夹<span class="wrong-count" id="favCount" style="display:none">0</span></button>
+  </div>
+</div>
+
+<!-- FAVORITES -->
+<div id="favPanel" style="display:none">
+  <div class="setup-card">
+    <h2>⭐ 收藏夹</h2>
+    <div id="favContent"></div>
+    <button class="start-btn" onclick="redoFav()" id="redoFavBtn" style="margin-top:14px">重做收藏题目</button>
+    <button class="wrong-btn" onclick="clearFav()" style="margin-top:8px;color:#999;border-color:#ccc">清空收藏夹</button>
+    <button class="nav-btn" onclick="closeFav()" style="width:100%;margin-top:8px">返回首页</button>
   </div>
 </div>
 
@@ -192,12 +221,18 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;m
     <span style="font-size:13px;color:#999" id="navHint"></span>
     <button class="nav-btn pri" id="nextBtn">下一题 &#9654;</button>
     <button class="nav-btn skip" id="skipBtn" style="display:none">跳过 ▸</button>
+    <button class="nav-btn" id="favToggle" style="display:none" onclick="toggleFav()">☆ 收藏</button>
   </div>
   <button class="nav-btn warn" id="submitBtn" style="display:none;width:100%;margin-top:10px">&#128203; 交卷</button>
 </div>
 
 <!-- RESULTS -->
 <div class="result-wrap" id="resultWrap"></div>
+
+<!-- Review modal -->
+<div class="review-overlay" id="reviewOverlay">
+  <div class="review-card" id="reviewCard"></div>
+</div>
 
 <div class="lightbox" id="lightbox" onclick="this.classList.remove('show')">
   <span class="close">&times;</span>
@@ -412,15 +447,142 @@ function startQuiz(){
 
 // ==================== 返回 ====================
 function goBack(){
+  if(reviewing){ backToResults(); return; }
   document.getElementById('setupPanel').style.display = 'block';
   document.getElementById('quizWrap').style.display = 'none';
   document.getElementById('resultWrap').style.display = 'none';
+  document.getElementById('favPanel').style.display = 'none';
   document.getElementById('resultWrap').innerHTML = '';
   document.getElementById('backBtn').style.display = 'none';
   qlist = [];
   done = false;
+  reviewing = false;
+  updateFavCount();
   window.scrollTo(0,0);
 }
+
+// ==================== 收藏夹 ====================
+var FAV_KEY = 'ecommerce_quiz_fav';
+
+function isFaved(qt, qText){
+  var all = loadFav();
+  return all.some(function(w){ return w.type===qt && w.q===qText; });
+}
+
+function toggleFav(){
+  var q = qlist[idx];
+  var qt = q._t;
+  var all = loadFav();
+  var found = -1;
+  for(var i=0;i<all.length;i++){ if(all[i].type===qt && all[i].q===q.q){ found=i; break; } }
+  if(found>=0){
+    all.splice(found,1);
+    document.getElementById('favToggle').innerHTML = '☆ 收藏';
+  } else {
+    all.push({type:qt, q:q.q, a:q.a, o:q.o||null, r:q.r||null, img:q.img||null, time:new Date().toISOString()});
+    document.getElementById('favToggle').innerHTML = '★ 已收藏';
+  }
+  localStorage.setItem(FAV_KEY, JSON.stringify(all));
+  updateFavCount();
+}
+
+function loadFav(){
+  try { return JSON.parse(localStorage.getItem(FAV_KEY) || '[]'); } catch(e){ return []; }
+}
+
+function clearFav(){
+  if(!confirm('确定清空收藏夹吗？')) return;
+  localStorage.removeItem(FAV_KEY);
+  updateFavCount();
+  openFav();
+}
+
+function updateFavCount(){
+  var all = loadFav();
+  var el = document.getElementById('favCount');
+  if(all.length>0){ el.style.display='inline-block'; el.textContent=all.length; }
+  else { el.style.display='none'; }
+}
+
+function openFav(){
+  var all = loadFav();
+  document.getElementById('setupPanel').style.display = 'none';
+  document.getElementById('quizWrap').style.display = 'none';
+  document.getElementById('resultWrap').style.display = 'none';
+  document.getElementById('favPanel').style.display = 'block';
+  document.getElementById('backBtn').style.display = 'block';
+
+  var h = '';
+  if(all.length===0){
+    h = '<div style="text-align:center;padding:30px;color:#999">收藏夹为空，做题时点击 ☆收藏 即可加入</div>';
+    document.getElementById('redoFavBtn').style.display = 'none';
+  } else {
+    document.getElementById('redoFavBtn').style.display = 'block';
+    h += '<div style="margin-bottom:8px;font-size:13px;color:#666;display:flex;justify-content:space-between;align-items:center">';
+    h += '<span>共 <b>'+all.length+'</b> 道收藏题目</span>';
+    h += '<label style="cursor:pointer;font-size:12px"><input type="checkbox" id="favSelectAll" onchange="toggleSelectAllFav()" checked> 全选</label>';
+    h += '</div>';
+    var tnames = {single:'单选题', multi:'多选题', fill:'填空题', essay:'论述题'};
+    all.forEach(function(w,i){
+      var txt = (w.q||'').replace(/\n/g,' ').slice(0,50);
+      h += '<div style="padding:8px 10px;margin-bottom:4px;background:#fff8e1;border-radius:6px;font-size:13px;display:flex;justify-content:space-between;align-items:center">';
+      h += '<label style="display:flex;align-items:center;cursor:pointer;flex:1">';
+      h += '<input type="checkbox" class="fav-check" data-i="'+i+'" checked style="margin-right:8px;accent-color:#1a73e8">';
+      h += '<span><b style="color:#e65100">['+(tnames[w.type]||w.type)+']</b> '+txt+'</span>';
+      h += '</label>';
+      h += '<span style="cursor:pointer;color:#999;font-size:16px;margin-left:8px" onclick="removeFav('+i+')" title="取消收藏">×</span>';
+      h += '</div>';
+    });
+  }
+  document.getElementById('favContent').innerHTML = h;
+  document.getElementById('favCount').textContent = all.length;
+  window.scrollTo(0,0);
+}
+
+function closeFav(){ goBack(); }
+
+function removeFav(i){
+  var all = loadFav();
+  all.splice(i,1);
+  localStorage.setItem(FAV_KEY, JSON.stringify(all));
+  openFav();
+}
+
+function toggleSelectAllFav(){
+  var checked = document.getElementById('favSelectAll').checked;
+  document.querySelectorAll('.fav-check').forEach(function(cb){ cb.checked = checked; });
+}
+
+function redoFav(){
+  var all = loadFav();
+  if(all.length===0) return;
+  // 只取勾选的题目
+  var cbs = document.querySelectorAll('.fav-check');
+  var selected = [];
+  cbs.forEach(function(cb){ if(cb.checked) selected.push(parseInt(cb.getAttribute('data-i'))); });
+  if(selected.length===0){ alert('请至少选择一道题'); return; }
+  var picked = selected.map(function(i){ return all[i]; });
+  qlist = picked.map(function(w){ return {_t:w.type, q:w.q, o:w.o, a:w.a, r:w.r, img:w.img}; });
+  mode = 'sequential';
+  qtype = 'fav';
+  idx = 0;
+  revealed = {};
+  skipped = {};
+  answers = {};
+  correct = {};
+  done = false;
+  document.getElementById('favPanel').style.display = 'none';
+  document.getElementById('setupPanel').style.display = 'none';
+  document.getElementById('quizWrap').style.display = 'block';
+  document.getElementById('resultWrap').style.display = 'none';
+  document.getElementById('resultWrap').innerHTML = '';
+  renderSidebar();
+  renderQ();
+  updateNav();
+  window.scrollTo(0,0);
+}
+
+updateFavCount();
 
 // ==================== 渲染 ====================
 function renderSidebar(){
@@ -690,6 +852,8 @@ function nextQ(){
     renderSidebar();
     updateNav();
     window.scrollTo(0,0);
+  } else if(reviewing){
+    backToResults();
   }
 }
 
@@ -729,9 +893,32 @@ function updateNav(){
   var nextBtn = document.getElementById('nextBtn');
   var skipBtn = document.getElementById('skipBtn');
   var submitBtn = document.getElementById('submitBtn');
+  var favBtn = document.getElementById('favToggle');
   var hint = document.getElementById('navHint');
   hint.textContent = '';
   if(qlist[idx]) hint.textContent = getTypeLabel(qlist[idx]._t);
+
+  // 回顾模式：隐藏收藏/跳过/交卷，只留导航
+  if(reviewing){
+    favBtn.style.display = 'none';
+    skipBtn.style.display = 'none';
+    submitBtn.style.display = 'none';
+    nextBtn.style.display = 'inline-block';
+    if(idx >= qlist.length-1){
+      nextBtn.textContent = '返回结果 📋';
+    } else {
+      nextBtn.textContent = '下一题 ▶';
+    }
+    return;
+  }
+
+  // 正常模式
+  favBtn.style.display = 'inline-block';
+  if(isFaved(qlist[idx]._t, qlist[idx].q)){
+    favBtn.innerHTML = '★ 已收藏';
+  } else {
+    favBtn.innerHTML = '☆ 收藏';
+  }
 
   var isLast = (idx===qlist.length-1);
   var rev = revealed[idx];
@@ -739,6 +926,7 @@ function updateNav(){
   if(isLast && rev){
     nextBtn.style.display = 'none';
     skipBtn.style.display = 'none';
+    favBtn.style.display = 'none';
     submitBtn.style.display = 'block';
   } else if(!rev){
     nextBtn.style.display = 'inline-block';
@@ -768,6 +956,8 @@ function submitAll(){
 
   done = true;
   document.getElementById('quizWrap').style.display = 'none';
+
+  // 收藏重做模式：不做自动移除，保持收藏
 
   var total = qlist.length;
   var correctCount = 0;
@@ -827,13 +1017,37 @@ function submitAll(){
     var icon = skipped ? '⏭' : (ok ? '✅' : '❌');
     if(q._t==='essay'){ cls='g'; icon='📝'; }
     var txt = (q.q||'').replace(/<[^>]*>/g,'').replace(/\s+/g,'').slice(0,35);
-    h += '<div class="dline '+cls+'"><span class="di">'+(i+1)+'</span><span>'+txt+'</span><span class="ds">'+icon+'</span></div>';
+    h += '<div class="dline '+cls+'" onclick="reviewQ('+i+')"><span class="di">'+(i+1)+'</span><span>'+txt+'</span><span class="ds">'+icon+'</span></div>';
   }
   h += '</div>';
   h += '<button class="rst-btn" onclick="location.reload()">重新开始</button>';
   h += '</div>';
 
   document.getElementById('resultWrap').innerHTML = h;
+  document.getElementById('resultWrap').style.display = 'block';
+  window.scrollTo(0,0);
+}
+
+// ==================== 题目回顾 ====================
+var reviewing = false;
+
+function reviewQ(i){
+  idx = i;
+  reviewing = true;
+  for(var j=0;j<qlist.length;j++){ revealed[j] = true; }
+
+  document.getElementById('resultWrap').style.display = 'none';
+  document.getElementById('quizWrap').style.display = 'block';
+
+  renderSidebar();
+  renderQ();
+  updateNav();
+  window.scrollTo(0,0);
+}
+
+function backToResults(){
+  reviewing = false;
+  document.getElementById('quizWrap').style.display = 'none';
   document.getElementById('resultWrap').style.display = 'block';
   window.scrollTo(0,0);
 }
