@@ -2,7 +2,7 @@
 
 一个**单文件、纯前端**的电子商务期末刷题页面。打开就能做，不用装环境、不用登录、不上传任何数据。
 
-- 在线版：<https://johnjiahao.github.io/ecommerce-quiz/>（若未开启 Pages，可按下文本地运行）
+- 在线版：<https://johnjiahao.github.io/ecommerce-quiz/>
 - 题库规模：**70 题** —— 单选 25 / 多选 22 / 填空 10 / 论述 13（含 3 道图片题）
 
 ---
